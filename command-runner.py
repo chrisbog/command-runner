@@ -35,13 +35,14 @@ for line in file_object:
     cleaned = line.replace("\n", "")
     # Remove the newline character, and split the file into the fields
     device = cleaned.split()
-    if len(device) < 3:
+    if len(device) < 4:
         print(f"WARNING: Ignoring Line '{cleaned}', Doesn't contain required fields.")
     else:
         item={
             "ipaddress":device[0],
             "username":device[1],
-            "password":device[2]
+            "password":device[2],
+            "type":device[3]
         }
         device_list.append(item)
 
@@ -51,25 +52,34 @@ for line in file_object:
 for device in device_list:
 
 
-    remote_device = {'device_type': 'autodetect',
+    remote_device = {'device_type': device["type"],
                     'host': device["ipaddress"],
                     'username': device["username"],
                     'password': device["password"]}
 
     print ("------------------------------------------------------------")
-    print ("Performing a health check on "+remote_device['host']+" using username: "+remote_device['username'])
+    print ("Performing a command_runner on "+remote_device['host']+" using username: "+remote_device['username'])
 
     # Try to detect the type of device
-    try:
+    if device['type']=="autodetect":
+        print("Attempting to determine the operating system of "+device["ipaddress"])
+        try:
 
-        guesser = SSHDetect(**remote_device,timeout=10)
-    except (NetMikoAuthenticationException, NetMikoTimeoutException) as e:
-        print("Error connecting to device: "+str(e))
-        continue
+            guesser = SSHDetect(**remote_device,timeout=10)
+        except (NetMikoAuthenticationException, NetMikoTimeoutException) as e:
+            print("Error connecting to device: "+str(e))
+            continue
 
-    best_match = guesser.autodetect()
+        best_match = guesser.autodetect()
 
-    print("This device is detected to be model type: " + best_match)
+        if best_match == None:
+            print("WARNING: best_match not determined - Setting to NXOS")
+            best_match = 'cisco_nxos'
+
+        print("This device is detected to be model type: " + best_match)
+    else:
+        print("Operating System of "+device["ipaddress"]+ "is specified as: "+device["type"])
+        best_match=device['type']
 
     if best_match not in ['cisco_ios', 'cisco_nxos', 'cisco_xr']:
         print("ERROR: " + best_match + " is not currently supported in this revision")
@@ -80,7 +90,7 @@ for device in device_list:
 
         ssh_connection = ConnectHandler(**remote_device)
 
-        ssh_connection.open_session_log("session-log-"+device["ipaddress"]+".log", mode=u'write')
+        ssh_connection.open_session_log(outputname+"-"+device["ipaddress"]+".log", mode=u'write')
 
         # enter enable mode
         ssh_connection.enable()

@@ -1,7 +1,7 @@
 # command-runner
 
 ## Introduction
-This python script will run a series of show commands for cisco devices to gather useful information.  The script will create a file for all the output of the files
+This python script will run a series of show commands for cisco devices to gather useful information.  The script will create a file for all the output of the files.   This requires ssh to log into each device.
 
 ## Requirements
 This module leverages python 3 and the following libraries are required:
@@ -46,7 +46,25 @@ optional arguments:
 * **-h** - display a help screen
 * **-o** - in addition to saving to a file, also display the output to the screen
 * **--outputname** - option output filename prefix to store the files.  If not, session-log will be used  
-* **filename** - a list of IP addresses to gather the statistics for
+* **filename** - a list of devices to run the commands with
+
+### Device File Format
+
+The device file is a very simple text file where each line represents a device that we wish to run commands against.   An example file is shown below.   There are basically four fields:
+
+* **device** - IP Address or hostname of device
+* **username** - Username to log into the device
+* **password** - Password to log into the device
+* **device_type** - Device Type format is either autodetect, cisco_xr, cisco_ios or cisco_nxos 
+
+**NOTE** - Normally autodetect should work, however I found out that there are certain types that it fails.   Therefore if you manually specify the device type it will be more efficient.
+
+```buildoutcfg
+192.168.243.1 admin password autodetect
+192.168.243.2 admin password cisco_xr
+192.168.243.3 admin password cisco_nxos
+192.168.243.4 admin password cisco_ios
+```
 
 ## Output
 The following is a very simple example:
