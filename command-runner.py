@@ -78,7 +78,7 @@ for device in device_list:
 
         print("This device is detected to be model type: " + best_match)
     else:
-        print("Operating System of "+device["ipaddress"]+ "is specified as: "+device["type"])
+        print("Operating System of "+device["ipaddress"]+ " is specified as: "+device["type"])
         best_match=device['type']
 
     if best_match not in ['cisco_ios', 'cisco_nxos', 'cisco_xr']:
